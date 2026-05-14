@@ -17,23 +17,73 @@ enum Status {
     CANCELED
 };
 
+string priorityToString(Priority p) {
+    switch(p) {
+        case LOW: return "LOW";
+        case MEDIUM: return "MEDIUM";
+        case HIGH: return "HIGH";
+    }
+    return "";
+}
+
+string statusToString(Status s) {
+    switch(s) {
+        case NEW: return "NEW";
+        case IN_PROGRESS: return "IN_PROGRESS";
+        case DONE: return "DONE";
+        case CANCELED: return "CANCELED";
+    }
+    return "";
+}
+
 class AbstractItem {
 protected:
     int id;
     string title;
     string description;
 public:
-    AbstractItem() {
-        id = 0;
-    }
     AbstractItem(int id, const string& title, const string& description) : id(id), title(title), description(description) {
-        if(id < 0 || title.empty() || description.empty()) {
-            throw invalid_argument("Invalid");
+        if(id < 0) {
+            throw invalid_argument("Invalid id");
+        }
+
+        if(title.empty()) {
+            throw invalid_argument("Invalid title");
+        }
+
+        if(description.empty()) {
+            throw invalid_argument("Invalid description");
         }
     }
+
     virtual ~AbstractItem() {}
-    virtual string getTitle() const = 0;
-    virtual string getDescription() const = 0;
+    virtual void getInfo() const = 0;
+
+    string getTitle() const {
+        return title;
+    }
+
+    string getDescription() const {
+        return description;
+    }
+
+    int getId() const {
+        return id;
+    }
+
+    void updateTitle(const string& newTitle) {
+        if (newTitle.empty()) {
+            throw invalid_argument("Title cannot be empty");
+        }
+        title = newTitle;
+    }
+
+    void updateDescription(const string& newDescription) {
+        if (newDescription.empty()) {
+            throw invalid_argument("Description cannot be empty");
+        }
+        description = newDescription;
+    }
 };
 
 class Date {
@@ -42,7 +92,23 @@ public:
     int month;
     int year;
 
-    Date(int day, int month, int year) : day(day), month(month), year(year) {}
+    Date(int day, int month, int year) : day(day), month(month), year(year) {
+        if(day < 1 || day > 31) {
+            throw invalid_argument("Invalid day");
+        }
+
+        if(month < 1 || month > 12) {
+            throw invalid_argument("Invalid month");
+        }
+
+        if(year < 0) {
+            throw invalid_argument("Invalid year");
+        }
+    }
+
+    void getInfo() const {
+        cout << day << "/" << month << "/" << year;
+    }
 };
 
 class Task;
@@ -56,17 +122,60 @@ private:
 
 public:
     User(int id, const string& name, const string& email)
-        : id(id), name(name), email(email) {}
+        : id(id), name(name), email(email) {
+            if(id < 0) {
+                throw invalid_argument("Invalid user id");
+            }
+
+            if(name.empty()) {
+                throw invalid_argument("Name cannot be empty");
+            }
+
+            if(email.empty()) {
+                throw invalid_argument("Email cannot be empty");
+            }
+        }
+
+    int getId() const {
+        return id;
+    }
 
     string getName() const {
         return name;
+    }
+
+    string getEmail() const {
+        return email;
+    }
+
+    void updateName(const string& newName) {
+        if (newName.empty()) {
+            throw invalid_argument("Name cannot be empty");
+        }
+        name = newName;
+    }
+
+    void updateEmail(const string& newEmail) {
+        if (newEmail.empty()) {
+            throw invalid_argument("Email cannot be empty");
+        }
+        email = newEmail;
     }
 
     void addTask(Task* task) {
         assignedTasks.push_back(task);
     }
 
-    vector<Task*> getTasks() const {
+    void removeTask(Task* task) {
+        for (int i = 0; i < assignedTasks.size(); i++) {
+            if (assignedTasks[i] == task) {
+                assignedTasks.erase(assignedTasks.begin() + i);
+                i--;
+            }
+        }
+    }
+
+    const vector<Task*>& getTasks() const {
         return assignedTasks;
     }
 };
@@ -80,7 +189,15 @@ private:
 
 public:
     Task(int id, const string& title, const string& description, const Date& deadline, Priority priority, Status status)
-        : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status) {}
+        : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status) {
+            if(priority < LOW || priority > HIGH) {
+                throw invalid_argument("Invalid priority");
+            }
+
+            if(status < NEW || status > CANCELED) {
+                throw invalid_argument("Invalid status");
+            }
+        }
 
     void changeStatus(Status status) {
         this->status = status;
@@ -90,29 +207,55 @@ public:
         this->priority = priority;
     }
 
+    void updateDeadline(const Date& newDeadline) {
+        deadline = newDeadline;
+    }
+
+    Priority getPriority() const {
+        return priority;
+    }
+
+    Status getStatus() const {
+        return status;
+    }
+
+    const Date& getDeadline() const {
+        return deadline;
+    }
+
     void assignUser(User* user) {
         assignedUsers.push_back(user);
+    }
+
+    void removeUser(User* user) {
+        for (int i = 0; i < assignedUsers.size(); i++) {
+            if (assignedUsers[i] == user) {
+                assignedUsers.erase(assignedUsers.begin() + i);
+                i--;
+            }
+        }
     }
 
     bool isOverdue() {
         return false;
     }
 
-    string getTitle() const override {
-        return title;
-    }
-
-    string getDescription() const override {
-        return description;
+    void getInfo() const override {
+        cout << title << " - " << description << ", ";
+        deadline.getInfo();
+        cout << ", " << priorityToString(priority) << ", " << statusToString(status) << endl;
     }
 };
+
 
 class Project : public AbstractItem {
 private:
     vector<Task> tasks;
 
 public:
-    Project(int id, const string& title, const string& description) : AbstractItem(id, title, description) {}
+    Project(int id, const string& title, const string& description) : AbstractItem(id, title, description) {
+        tasks.reserve(1000);
+    }
 
     void addTask(const Task& task) {
         tasks.push_back(task);
@@ -128,12 +271,8 @@ public:
         return tasks;
     }
 
-    string getTitle() const override {
-        return title;
-    }
-
-    string getDescription() const override {
-        return description;
+    void getInfo() const override {
+        cout << title << " - " << description <<  endl;
     }
 };
 
@@ -148,7 +287,13 @@ int main() {
         cout << "3. Add Task to Project\n";
         cout << "4. Show Projects\n";
         cout << "5. Assign task to user\n";
-        cout << "6. Exit\n";
+        cout << "6. Update User\n";
+        cout << "7. Delete User\n";
+        cout << "8. Update Project\n";
+        cout << "9. Delete Project\n";
+        cout << "10. Update Task\n";
+        cout << "11. Delete Task\n";
+        cout << "12. Exit\n";
         cout << "Choice: ";
 
         int choice;
@@ -173,9 +318,13 @@ int main() {
             cout << "Email: ";
             getline(cin, email);
 
-            users.push_back(User(id, name, email));
-
-            cout << "User added successfully!\n";
+            try {
+                users.push_back(User(id, name, email));
+                cout << "User added successfully!\n";
+            }
+            catch(exception& e) {
+                cout << "Error: " << e.what() << endl;
+            }
         }
 
         else if (choice == 2) {
@@ -266,7 +415,7 @@ int main() {
 
             for (int i = 0; i < projects.size(); i++) {
                 cout << "\nProject " << i << ": ";
-                cout << projects[i].getTitle() << " - " << projects[i].getDescription() << endl;
+                projects[i].getInfo();
 
                 vector<Task>& tasks = projects[i].getTasks();
 
@@ -276,7 +425,7 @@ int main() {
                 else {
                     for (int j = 0; j < tasks.size(); j++) {
                         cout << "  Task " << j << ": ";
-                        cout << tasks[j].getTitle() << " - " << tasks[j].getDescription() << endl;
+                        tasks[j].getInfo();
                     }
                 }
             }
@@ -357,7 +506,260 @@ int main() {
         cout << "Task assigned successfully!\n";
     }
 
+
+
         else if (choice == 6) {
+            if (users.empty()) {
+                cout << "No users available!\n";
+                continue;
+            }
+
+            cout << "\nUsers:\n";
+            for (int i = 0; i < users.size(); i++) {
+                cout << i << ". " << users[i].getName() << " - " << users[i].getEmail() << endl;
+            }
+
+            int userIndex;
+            cout << "Choose user index: ";
+            cin >> userIndex;
+
+            if (userIndex < 0 || userIndex >= users.size()) {
+                cout << "Invalid user index!\n";
+                continue;
+            }
+
+            string name, email;
+            cin.ignore();
+
+            cout << "New name: ";
+            getline(cin, name);
+
+            cout << "New email: ";
+            getline(cin, email);
+
+            try {
+                users[userIndex].updateName(name);
+                users[userIndex].updateEmail(email);
+                cout << "User updated successfully!\n";
+            }
+            catch (exception& e) {
+                cout << "Error: " << e.what() << endl;
+            }
+        }
+
+        else if (choice == 7) {
+            if (users.empty()) {
+                cout << "No users available!\n";
+                continue;
+            }
+
+            cout << "\nUsers:\n";
+            for (int i = 0; i < users.size(); i++) {
+                cout << i << ". " << users[i].getName() << endl;
+            }
+
+            int userIndex;
+            cout << "Choose user index to delete: ";
+            cin >> userIndex;
+
+            if (userIndex < 0 || userIndex >= users.size()) {
+                cout << "Invalid user index!\n";
+                continue;
+            }
+
+            for(auto* task : users[userIndex].getTasks()) {
+                task->removeUser(&users[userIndex]);
+            }
+
+            users.erase(users.begin() + userIndex);
+            cout << "User deleted successfully!\n";
+        }
+
+        else if (choice == 8) {
+            if (projects.empty()) {
+                cout << "No projects available!\n";
+                continue;
+            }
+
+            cout << "\nProjects:\n";
+            for (int i = 0; i < projects.size(); i++) {
+                cout << i << ". " << projects[i].getTitle() << endl;
+            }
+
+            int projectIndex;
+            cout << "Choose project index: ";
+            cin >> projectIndex;
+
+            if (projectIndex < 0 || projectIndex >= projects.size()) {
+                cout << "Invalid project index!\n";
+                continue;
+            }
+
+            string title, description;
+            cin.ignore();
+
+            cout << "New project title: ";
+            getline(cin, title);
+
+            cout << "New project description: ";
+            getline(cin, description);
+
+            try {
+                projects[projectIndex].updateTitle(title);
+                projects[projectIndex].updateDescription(description);
+                cout << "Project updated successfully!\n";
+            }
+            catch (exception& e) {
+                cout << "Error: " << e.what() << endl;
+            }
+        }
+
+        else if (choice == 9) {
+            if (projects.empty()) {
+                cout << "No projects available!\n";
+                continue;
+            }
+
+            cout << "\nProjects:\n";
+            for (int i = 0; i < projects.size(); i++) {
+                cout << i << ". " << projects[i].getTitle() << endl;
+            }
+
+            int projectIndex;
+            cout << "Choose project index to delete: ";
+            cin >> projectIndex;
+
+            if (projectIndex < 0 || projectIndex >= projects.size()) {
+                cout << "Invalid project index!\n";
+                continue;
+            }
+
+            projects.erase(projects.begin() + projectIndex);
+            cout << "Project deleted successfully!\n";
+        }
+
+        else if (choice == 10) {
+            if (projects.empty()) {
+                cout << "No projects available!\n";
+                continue;
+            }
+
+            cout << "\nProjects:\n";
+            for (int i = 0; i < projects.size(); i++) {
+                cout << i << ". " << projects[i].getTitle() << endl;
+            }
+
+            int projectIndex;
+            cout << "Choose project index: ";
+            cin >> projectIndex;
+
+            if (projectIndex < 0 || projectIndex >= projects.size()) {
+                cout << "Invalid project index!\n";
+                continue;
+            }
+
+            vector<Task>& tasks = projects[projectIndex].getTasks();
+            if (tasks.empty()) {
+                cout << "No tasks in this project!\n";
+                continue;
+            }
+
+            cout << "\nTasks:\n";
+            for (int i = 0; i < tasks.size(); i++) {
+                cout << i << ". " << tasks[i].getTitle() << endl;
+            }
+
+            int taskIndex;
+            cout << "Choose task index: ";
+            cin >> taskIndex;
+
+            if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                cout << "Invalid task index!\n";
+                continue;
+            }
+
+            int day, month, year, priorityChoice, statusChoice;
+            string title, description;
+            cin.ignore();
+
+            cout << "New task title: ";
+            getline(cin, title);
+
+            cout << "New task description: ";
+            getline(cin, description);
+
+            cout << "New deadline day month year: ";
+            cin >> day >> month >> year;
+
+            cout << "New priority (0-LOW, 1-MEDIUM, 2-HIGH): ";
+            cin >> priorityChoice;
+
+            cout << "New status (0-NEW, 1-IN_PROGRESS, 2-DONE, 3-CANCELED): ";
+            cin >> statusChoice;
+
+            try {
+                tasks[taskIndex].updateTitle(title);
+                tasks[taskIndex].updateDescription(description);
+                tasks[taskIndex].updateDeadline(Date(day, month, year));
+                tasks[taskIndex].changePriority((Priority)priorityChoice);
+                tasks[taskIndex].changeStatus((Status)statusChoice);
+                cout << "Task updated successfully!\n";
+            }
+            catch (exception& e) {
+                cout << "Error: " << e.what() << endl;
+            }
+        }
+
+        else if (choice == 11) {
+            if (projects.empty()) {
+                cout << "No projects available!\n";
+                continue;
+            }
+
+            cout << "\nProjects:\n";
+            for (int i = 0; i < projects.size(); i++) {
+                cout << i << ". " << projects[i].getTitle() << endl;
+            }
+
+            int projectIndex;
+            cout << "Choose project index: ";
+            cin >> projectIndex;
+
+            if (projectIndex < 0 || projectIndex >= projects.size()) {
+                cout << "Invalid project index!\n";
+                continue;
+            }
+
+            vector<Task>& tasks = projects[projectIndex].getTasks();
+            if (tasks.empty()) {
+                cout << "No tasks in this project!\n";
+                continue;
+            }
+
+            cout << "\nTasks:\n";
+            for (int i = 0; i < tasks.size(); i++) {
+                cout << i << ". " << tasks[i].getTitle() << endl;
+            }
+
+            int taskIndex;
+            cout << "Choose task index to delete: ";
+            cin >> taskIndex;
+
+            if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                cout << "Invalid task index!\n";
+                continue;
+            }
+
+            Task* taskToDelete = &tasks[taskIndex];
+            for (int i = 0; i < users.size(); i++) {
+                users[i].removeTask(taskToDelete);
+            }
+
+            projects[projectIndex].removeTask(taskIndex);
+            cout << "Task deleted successfully!\n";
+        }
+
+        else if (choice == 12) {
             cout << "Exiting...\n";
             break;
         }
