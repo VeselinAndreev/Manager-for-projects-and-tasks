@@ -32,7 +32,8 @@ public:
         }
     }
     virtual ~AbstractItem() {}
-    virtual string getInfo() const = 0;
+    virtual string getTitle() const = 0;
+    virtual string getDescription() const = 0;
 };
 
 class Date {
@@ -51,12 +52,22 @@ private:
     int id;
     string name;
     string email;
+    vector<Task*> assignedTasks;
 
 public:
-    User(int id, const string& name, const string& email) : id(id), name(name), email(email) {}
+    User(int id, const string& name, const string& email)
+        : id(id), name(name), email(email) {}
 
-    vector<Task*> getTasks() {
-        return {};
+    string getName() const {
+        return name;
+    }
+
+    void addTask(Task* task) {
+        assignedTasks.push_back(task);
+    }
+
+    vector<Task*> getTasks() const {
+        return assignedTasks;
     }
 };
 
@@ -65,11 +76,11 @@ private:
     Date deadline;
     Priority priority;
     Status status;
-    User* assignedUser;
+    vector<User*> assignedUsers;
 
 public:
-    Task(int id, const string& title, const string& description, const Date& deadline, Priority priority, Status status, User* assignedUser)
-        : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status), assignedUser(assignedUser) {}
+    Task(int id, const string& title, const string& description, const Date& deadline, Priority priority, Status status)
+        : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status) {}
 
     void changeStatus(Status status) {
         this->status = status;
@@ -79,12 +90,20 @@ public:
         this->priority = priority;
     }
 
+    void assignUser(User* user) {
+        assignedUsers.push_back(user);
+    }
+
     bool isOverdue() {
         return false;
     }
 
-    string getInfo() const override {
-        return title + " - " + description;
+    string getTitle() const override {
+        return title;
+    }
+
+    string getDescription() const override {
+        return description;
     }
 };
 
@@ -105,12 +124,16 @@ public:
         }
     }
 
-    vector<Task> getTasks() {
+    vector<Task>& getTasks() {
         return tasks;
     }
 
-    string getInfo() const override {
-        return title + " - " + description;
+    string getTitle() const override {
+        return title;
+    }
+
+    string getDescription() const override {
+        return description;
     }
 };
 
@@ -124,11 +147,16 @@ int main() {
         cout << "2. Create Project\n";
         cout << "3. Add Task to Project\n";
         cout << "4. Show Projects\n";
-        cout << "5. Exit\n";
+        cout << "5. Assign task to user\n";
+        cout << "6. Exit\n";
         cout << "Choice: ";
 
         int choice;
-        cin >> choice;
+
+        if (!(cin >> choice)) {
+            cout << "Input error\n";
+            break;
+        }
 
         if (choice == 1) {
             int id;
@@ -184,7 +212,7 @@ int main() {
 
             cout << "\nProjects:\n";
             for (int i = 0; i < projects.size(); i++) {
-                cout << i << ". " << projects[i].getInfo() << endl;
+                cout << i << ". " << projects[i].getTitle() << endl;
             }
 
             cout << "Choose project index: ";
@@ -218,25 +246,8 @@ int main() {
             cout << "Status (0-NEW, 1-IN_PROGRESS, 2-DONE, 3-CANCELED): ";
             cin >> statusChoice;
 
-            User* assignedUser = nullptr;
-
-            if (!users.empty()) {
-                cout << "\nUsers:\n";
-
-                for (int i = 0; i < users.size(); i++) {
-                    cout << i << ". User\n";
-                }
-
-                cout << "Choose user index: ";
-                cin >> userIndex;
-
-                if (userIndex >= 0 && userIndex < users.size()) {
-                    assignedUser = &users[userIndex];
-                }
-            }
-
             try {
-                Task task(id, title, description, Date(day, month, year), (Priority)priorityChoice, (Status)statusChoice, assignedUser);
+                Task task(id, title, description, Date(day, month, year), (Priority)priorityChoice, (Status)statusChoice);
 
                 projects[projectIndex].addTask(task);
 
@@ -255,9 +266,9 @@ int main() {
 
             for (int i = 0; i < projects.size(); i++) {
                 cout << "\nProject " << i << ": ";
-                cout << projects[i].getInfo() << endl;
+                cout << projects[i].getTitle() << " - " << projects[i].getDescription() << endl;
 
-                vector<Task> tasks = projects[i].getTasks();
+                vector<Task>& tasks = projects[i].getTasks();
 
                 if (tasks.empty()) {
                     cout << "No tasks.\n";
@@ -265,13 +276,88 @@ int main() {
                 else {
                     for (int j = 0; j < tasks.size(); j++) {
                         cout << "  Task " << j << ": ";
-                        cout << tasks[j].getInfo() << endl;
+                        cout << tasks[j].getTitle() << " - " << tasks[j].getDescription() << endl;
                     }
                 }
             }
         }
 
         else if (choice == 5) {
+
+        if (users.empty() || projects.empty()) {
+            cout << "No users or projects available!\n";
+            continue;
+        }
+
+        cout << "\nUsers:\n";
+
+        for (int i = 0; i < users.size(); i++) {
+            cout << i << ". " << users[i].getName() << endl;
+        }
+
+        int userIndex;
+
+        cout << "Choose user index: ";
+        cin >> userIndex;
+
+        if (userIndex < 0 || userIndex >= users.size()) {
+            cout << "Invalid user index!\n";
+            continue;
+        }
+
+        User& chosenUser = users[userIndex];
+
+        cout << "\nProjects:\n";
+
+        for (int i = 0; i < projects.size(); i++) {
+            cout << i << ". " << projects[i].getTitle() << endl;
+        }
+
+        int projectIndex;
+
+        cout << "Choose project index: ";
+        cin >> projectIndex;
+
+        if (projectIndex < 0 || projectIndex >= projects.size()) {
+            cout << "Invalid project index!\n";
+            continue;
+        }
+
+        Project& chosenProject = projects[projectIndex];
+
+        vector<Task>& tasks = chosenProject.getTasks();
+
+        if (tasks.empty()) {
+            cout << "No tasks in this project!\n";
+            continue;
+        }
+
+        cout << "\nTasks:\n";
+
+        for (int i = 0; i < tasks.size(); i++) {
+            cout << i << ". " << tasks[i].getTitle() << endl;
+        }
+
+        int taskIndex;
+
+        cout << "Choose task index: ";
+        cin >> taskIndex;
+
+        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+            cout << "Invalid task index!\n";
+            continue;
+        }
+
+        Task& chosenTask = tasks[taskIndex];
+
+        chosenTask.assignUser(&chosenUser);
+
+        chosenUser.addTask(&chosenTask);
+
+        cout << "Task assigned successfully!\n";
+    }
+
+        else if (choice == 6) {
             cout << "Exiting...\n";
             break;
         }
