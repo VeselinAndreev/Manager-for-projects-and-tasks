@@ -241,7 +241,7 @@ public:
     }
 
     void getInfo() const override {
-        cout << title << " - " << description << ", ";
+        cout << "id = " << id << ", " << title << " - " << description << ", ";
         deadline.getInfo();
         cout << ", " << priorityToString(priority) << ", " << statusToString(status) << endl;
     }
@@ -271,10 +271,38 @@ public:
         return tasks;
     }
 
+    bool taskIdExists(int id) const {
+        for (const auto& task : tasks) {
+            if (task.getId() == id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void getInfo() const override {
-        cout << title << " - " << description <<  endl;
+        cout << "id = " << id << ", " << title << " - " << description << endl;
     }
 };
+
+bool userIdExists(const vector<User>& users, int id) {
+    for (const auto& user : users) {
+        if (user.getId() == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool projectIdExists(const vector<Project>& projects, int id) {
+    for (const auto& project : projects) {
+        if (project.getId() == id) {
+            return true;
+        }
+    }
+    return false;
+}
 
 int main() {
     vector<User> users;
@@ -312,6 +340,11 @@ int main() {
 
             cin.ignore();
 
+            if (userIdExists(users, id)) {
+                cout << "Error: User with this id already exists!\n";
+                continue;
+            }
+
             cout << "Name: ";
             getline(cin, name);
 
@@ -335,6 +368,11 @@ int main() {
             cin >> id;
 
             cin.ignore();
+
+            if (projectIdExists(projects, id)) {
+                cout << "Project with this id already exists!\n";
+                continue;
+            }
 
             cout << "Project title: ";
             getline(cin, title);
@@ -379,6 +417,11 @@ int main() {
             cin >> id;
 
             cin.ignore();
+
+            if (projects[projectIndex].taskIdExists(id)) {
+                cout << "Task with this id already exists in this project!\n";
+                continue;
+            }
 
             cout << "Task title: ";
             getline(cin, title);
