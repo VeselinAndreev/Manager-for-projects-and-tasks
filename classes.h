@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+
 using namespace std;
 
 enum Priority {
@@ -20,8 +21,8 @@ enum Status {
     CANCELED
 };
 
-string priorityToString(Priority p) {
-    switch(p) {
+inline string priorityToString(Priority p) {
+    switch (p) {
         case LOW: return "LOW";
         case MEDIUM: return "MEDIUM";
         case HIGH: return "HIGH";
@@ -29,8 +30,8 @@ string priorityToString(Priority p) {
     return "";
 }
 
-string statusToString(Status s) {
-    switch(s) {
+inline string statusToString(Status s) {
+    switch (s) {
         case NEW: return "NEW";
         case IN_PROGRESS: return "IN_PROGRESS";
         case DONE: return "DONE";
@@ -44,22 +45,25 @@ protected:
     int id;
     string title;
     string description;
+
 public:
-    AbstractItem(int id, const string& title, const string& description) : id(id), title(title), description(description) {
-        if(id < 0) {
+    AbstractItem(int id, const string& title, const string& description)
+        : id(id), title(title), description(description) {
+        if (id < 0) {
             throw invalid_argument("Invalid id");
         }
 
-        if(title.empty()) {
+        if (title.empty()) {
             throw invalid_argument("Invalid title");
         }
 
-        if(description.empty()) {
+        if (description.empty()) {
             throw invalid_argument("Invalid description");
         }
     }
 
     virtual ~AbstractItem() {}
+
     virtual void getInfo() const = 0;
 
     string getTitle() const {
@@ -78,6 +82,7 @@ public:
         if (newTitle.empty()) {
             throw invalid_argument("Title cannot be empty");
         }
+
         title = newTitle;
     }
 
@@ -85,6 +90,7 @@ public:
         if (newDescription.empty()) {
             throw invalid_argument("Description cannot be empty");
         }
+
         description = newDescription;
     }
 };
@@ -95,16 +101,17 @@ public:
     int month;
     int year;
 
-    Date(int day, int month, int year) : day(day), month(month), year(year) {
-        if(day < 1 || day > 31) {
+    Date(int day, int month, int year)
+        : day(day), month(month), year(year) {
+        if (day < 1 || day > 31) {
             throw invalid_argument("Invalid day");
         }
 
-        if(month < 1 || month > 12) {
+        if (month < 1 || month > 12) {
             throw invalid_argument("Invalid month");
         }
 
-        if(year < 0) {
+        if (year < 0) {
             throw invalid_argument("Invalid year");
         }
     }
@@ -126,18 +133,18 @@ private:
 public:
     User(int id, const string& name, const string& email)
         : id(id), name(name), email(email) {
-            if(id < 0) {
-                throw invalid_argument("Invalid user id");
-            }
-
-            if(name.empty()) {
-                throw invalid_argument("Name cannot be empty");
-            }
-
-            if(email.empty()) {
-                throw invalid_argument("Email cannot be empty");
-            }
+        if (id < 0) {
+            throw invalid_argument("Invalid user id");
         }
+
+        if (name.empty()) {
+            throw invalid_argument("Name cannot be empty");
+        }
+
+        if (email.empty()) {
+            throw invalid_argument("Email cannot be empty");
+        }
+    }
 
     int getId() const {
         return id;
@@ -155,6 +162,7 @@ public:
         if (newName.empty()) {
             throw invalid_argument("Name cannot be empty");
         }
+
         name = newName;
     }
 
@@ -162,6 +170,7 @@ public:
         if (newEmail.empty()) {
             throw invalid_argument("Email cannot be empty");
         }
+
         email = newEmail;
     }
 
@@ -193,14 +202,14 @@ private:
 public:
     Task(int id, const string& title, const string& description, const Date& deadline, Priority priority, Status status)
         : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status) {
-            if(priority < LOW || priority > HIGH) {
-                throw invalid_argument("Invalid priority");
-            }
-
-            if(status < NEW || status > CANCELED) {
-                throw invalid_argument("Invalid status");
-            }
+        if (priority < LOW || priority > HIGH) {
+            throw invalid_argument("Invalid priority");
         }
+
+        if (status < NEW || status > CANCELED) {
+            throw invalid_argument("Invalid status");
+        }
+    }
 
     void changeStatus(Status status) {
         this->status = status;
@@ -250,13 +259,13 @@ public:
     }
 };
 
-
 class Project : public AbstractItem {
 private:
     vector<Task> tasks;
 
 public:
-    Project(int id, const string& title, const string& description) : AbstractItem(id, title, description) {
+    Project(int id, const string& title, const string& description)
+        : AbstractItem(id, title, description) {
         tasks.reserve(1000);
     }
 
@@ -265,7 +274,7 @@ public:
     }
 
     void removeTask(int index) {
-        if(index >= 0 && index < tasks.size()) {
+        if (index >= 0 && index < tasks.size()) {
             tasks.erase(tasks.begin() + index);
         }
     }
