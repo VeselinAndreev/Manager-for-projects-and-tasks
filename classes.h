@@ -190,6 +190,10 @@ public:
     const vector<Task*>& getTasks() const {
         return assignedTasks;
     }
+
+    void getInfo() {
+        cout << "id = " << id << "," << name << " - " << email << endl;
+    }
 };
 
 class Task : public AbstractItem {

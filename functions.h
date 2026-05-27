@@ -29,15 +29,16 @@ void printMenu() {
     cout << "1. Add User\n";
     cout << "2. Create Project\n";
     cout << "3. Add Task to Project\n";
-    cout << "4. Show Projects\n";
-    cout << "5. Assign task to user\n";
-    cout << "6. Update User\n";
-    cout << "7. Delete User\n";
-    cout << "8. Update Project\n";
-    cout << "9. Delete Project\n";
-    cout << "10. Update Task\n";
-    cout << "11. Delete Task\n";
-    cout << "12. Exit\n";
+    cout << "4. Show Users\n";
+    cout << "5. Show Projects\n";
+    cout << "6. Assign task to user\n";
+    cout << "7. Update User\n";
+    cout << "8. Delete User\n";
+    cout << "9. Update Project\n";
+    cout << "10. Delete Project\n";
+    cout << "11. Update Task\n";
+    cout << "12. Delete Task\n";
+    cout << "13. Exit\n";
     cout << "Choice: ";
 }
 
@@ -179,6 +180,30 @@ void addTaskToProject() {
     }
 }
 
+void showUsers() {
+    if(users.empty()) {
+        cout << "No users available!\n";
+        return;
+    }
+
+    for(int i = 0; i < users.size(); i++) {
+        cout << "\nUser" << i << ": ";
+        users[i].getInfo();
+
+        const vector<Task*>& tasks = users[i].getTasks();
+
+        if (tasks.empty()) {
+            cout << "  No tasks assigned.\n";
+        }
+        else {
+            for (int j = 0; j < tasks.size(); j++) {
+                cout << "  Task " << j << ": ";
+                tasks[j]->getInfo();
+            }
+        }
+    }
+}
+
 void showProjects() {
     if (projects.empty()) {
         cout << "No projects available!\n";
@@ -192,7 +217,7 @@ void showProjects() {
         vector<Task>& tasks = projects[i].getTasks();
 
         if (tasks.empty()) {
-            cout << "No tasks.\n";
+            cout << "  No tasks.\n";
         }
         else {
             for (int j = 0; j < tasks.size(); j++) {

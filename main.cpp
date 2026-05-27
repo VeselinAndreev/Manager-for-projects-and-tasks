@@ -25,30 +25,33 @@ int main() {
                 addTaskToProject();
                 break;
             case 4:
-                showProjects();
+                showUsers();
                 break;
             case 5:
-                assignTaskToUser();
+                showProjects();
                 break;
             case 6:
-                updateUser();
+                assignTaskToUser();
                 break;
             case 7:
-                deleteUser();
+                updateUser();
                 break;
             case 8:
-                updateProject();
+                deleteUser();
                 break;
             case 9:
-                deleteProject();
+                updateProject();
                 break;
             case 10:
-                updateTask();
+                deleteProject();
                 break;
             case 11:
-                deleteTask();
+                updateTask();
                 break;
             case 12:
+                deleteTask();
+                break;
+            case 13:
                 cout << "Exiting...\n";
                 return 0;
             default:
