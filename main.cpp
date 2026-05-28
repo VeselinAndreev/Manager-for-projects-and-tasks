@@ -52,6 +52,12 @@ int main() {
                 deleteTask();
                 break;
             case 13:
+                sortTasksByPriority();
+                break;
+            case 14:
+                sortTasksByStatus();
+                break;
+            case 15:
                 cout << "Exiting...\n";
                 return 0;
             default:

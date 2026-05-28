@@ -101,18 +101,33 @@ public:
     int month;
     int year;
 
+    bool isLeapYear(int year) const {
+        return (year % 400 == 0) || (year % 4 == 0 && year % 100 != 0);
+    }
+
     Date(int day, int month, int year)
         : day(day), month(month), year(year) {
-        if (day < 1 || day > 31) {
-            throw invalid_argument("Invalid day");
+            
+        if (year < 0) {
+            throw invalid_argument("Invalid year");
         }
 
         if (month < 1 || month > 12) {
             throw invalid_argument("Invalid month");
         }
 
-        if (year < 0) {
-            throw invalid_argument("Invalid year");
+        int daysInMonth[] = {
+            31, 28, 31, 30,
+            31, 30, 31, 31,
+            30, 31, 30, 31
+        };
+
+        if (isLeapYear(year)) {
+            daysInMonth[1] = 29;
+        }
+
+        if (day < 1 || day > daysInMonth[month - 1]) {
+            throw invalid_argument("Invalid date");
         }
     }
 

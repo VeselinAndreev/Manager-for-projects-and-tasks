@@ -2,6 +2,7 @@
 #define FUNCTIONS_H
 
 #include "classes.h"
+#include <algorithm>
 
 extern vector<User> users;
 extern vector<Project> projects;
@@ -38,7 +39,9 @@ void printMenu() {
     cout << "10. Delete Project\n";
     cout << "11. Update Task\n";
     cout << "12. Delete Task\n";
-    cout << "13. Exit\n";
+    cout << "13. Sort tasks by priority\n";
+    cout << "14. Sort tasks by status\n";
+    cout << "15. Exit\n";
     cout << "Choice: ";
 }
 
@@ -167,11 +170,8 @@ void addTaskToProject() {
     cout << "Priority (0-LOW, 1-MEDIUM, 2-HIGH): ";
     cin >> priorityChoice;
 
-    cout << "Status (0-NEW, 1-IN_PROGRESS, 2-DONE, 3-CANCELED): ";
-    cin >> statusChoice;
-
     try {
-        Task task(id, title, description, Date(day, month, year), (Priority)priorityChoice, (Status)statusChoice);
+        Task task(id, title, description, Date(day, month, year), (Priority)priorityChoice, NEW);
         projects[projectIndex].addTask(task);
         cout << "Task added successfully!\n";
     }
@@ -518,6 +518,120 @@ void deleteTask() {
 
     projects[projectIndex].removeTask(taskIndex);
     cout << "Task deleted successfully!\n";
+}
+
+bool comparePriorityLowToHigh(const Task& a, const Task& b) {
+    return a.getPriority() < b.getPriority();
+}
+
+bool comparePriorityHighToLow(const Task& a, const Task& b) {
+    return a.getPriority() > b.getPriority();
+}
+
+bool compareStatusNewToCanceled(const Task& a, const Task& b) {
+    return a.getStatus() < b.getStatus();
+}
+
+bool compareStatusCanceledToNew(const Task& a, const Task& b) {
+    return a.getStatus() > b.getStatus();
+}   
+
+void sortTasksByPriority() {
+    if (projects.empty()) {
+        cout << "No projects available!\n";
+        return;
+    }
+
+    printProjects();
+
+    int projectIndex;
+    cout << "Choose project index: ";
+    cin >> projectIndex;
+
+    if (projectIndex < 0 || projectIndex >= projects.size()) {
+        cout << "Invalid project index!\n";
+        return;
+    }
+
+    vector<Task> tasks = projects[projectIndex].getTasks();
+
+    if (tasks.empty()) {
+        cout << "No tasks in this project!\n";
+        return;
+    }
+
+    int choice;
+    cout << "1. LOW to HIGH\n";
+    cout << "2. HIGH to LOW\n";
+    cout << "Choice: ";
+    cin >> choice;
+
+    if (choice == 1) {
+        sort(tasks.begin(), tasks.end(), comparePriorityLowToHigh);
+    }
+    else if (choice == 2) {
+        sort(tasks.begin(), tasks.end(), comparePriorityHighToLow);
+    }
+    else {
+        cout << "Invalid choice!\n";
+        return;
+    }
+
+    cout << "\nSorted tasks:\n";
+
+    for (int i = 0; i < tasks.size(); i++) {
+        cout << "Task " << i << ": ";
+        tasks[i].getInfo();
+    }
+}
+
+void sortTasksByStatus() {
+    if (projects.empty()) {
+        cout << "No projects available!\n";
+        return;
+    }
+
+    printProjects();
+
+    int projectIndex;
+    cout << "Choose project index: ";
+    cin >> projectIndex;
+
+    if (projectIndex < 0 || projectIndex >= projects.size()) {
+        cout << "Invalid project index!\n";
+        return;
+    }
+
+    vector<Task> tasks = projects[projectIndex].getTasks();
+
+    if (tasks.empty()) {
+        cout << "No tasks in this project!\n";
+        return;
+    }
+
+    int choice;
+    cout << "1. NEW to CANCELED\n";
+    cout << "2. CANCELED to NEW\n";
+    cout << "Choice: ";
+    cin >> choice;
+
+    if (choice == 1) {
+        sort(tasks.begin(), tasks.end(), compareStatusNewToCanceled);
+    }
+    else if (choice == 2) {
+        sort(tasks.begin(), tasks.end(), compareStatusCanceledToNew);
+    }
+    else {
+        cout << "Invalid choice!\n";
+        return;
+    }
+
+    cout << "\nSorted tasks:\n";
+
+    for (int i = 0; i < tasks.size(); i++) {
+        cout << "Task " << i << ": ";
+        tasks[i].getInfo();
+    }
 }
 
 #endif
