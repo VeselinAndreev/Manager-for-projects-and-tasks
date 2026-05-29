@@ -188,8 +188,15 @@ public:
         email = newEmail;
     }
 
-    void addTask(Task* task) {
+    bool addTask(Task* task) {
+        for (auto* assignedTask : assignedTasks) {
+            if (assignedTask == task) {
+                return false;
+            }
+        }
+
         assignedTasks.push_back(task);
+        return true;
     }
 
     void removeTask(Task* task) {
@@ -254,8 +261,15 @@ public:
         return deadline;
     }
 
-    void assignUser(User* user) {
+    bool assignUser(User* user) {
+        for (auto* assignedUser : assignedUsers) {
+            if (assignedUser == user) {
+                return false;
+            }
+        }
+
         assignedUsers.push_back(user);
+        return true;
     }
 
     void removeUser(User* user) {

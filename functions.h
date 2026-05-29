@@ -228,61 +228,69 @@ void showProjects() {
     }
 }
 
-void assignTaskToUser() {
-    if (users.empty() || projects.empty()) {
-        cout << "No users or projects available!\n";
-        return;
+    void assignTaskToUser() {
+        if (users.empty() || projects.empty()) {
+            cout << "No users or projects available!\n";
+            return;
+        }
+
+        printUsers();
+
+        int userIndex;
+        cout << "Choose user index: ";
+        cin >> userIndex;
+
+        if (userIndex < 0 || userIndex >= users.size()) {
+            cout << "Invalid user index!\n";
+            return;
+        }
+
+        User& chosenUser = users[userIndex];
+
+        printProjects();
+
+        int projectIndex;
+        cout << "Choose project index: ";
+        cin >> projectIndex;
+
+        if (projectIndex < 0 || projectIndex >= projects.size()) {
+            cout << "Invalid project index!\n";
+            return;
+        }
+
+        Project& chosenProject = projects[projectIndex];
+        vector<Task>& tasks = chosenProject.getTasks();
+
+        if (tasks.empty()) {
+            cout << "No tasks in this project!\n";
+            return;
+        }
+
+        printTasks(tasks);
+
+        int taskIndex;
+        cout << "Choose task index: ";
+        cin >> taskIndex;
+
+        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+            cout << "Invalid task index!\n";
+            return;
+        }
+
+        Task& chosenTask = tasks[taskIndex];
+
+        if (!chosenTask.assignUser(&chosenUser)) {
+            cout << "This user is already assigned to this task!\n";
+            return;
+        }
+
+        if (!chosenUser.addTask(&chosenTask)) {
+            cout << "This task is already assigned to this user!\n";
+            return;
+        }
+
+        cout << "Task assigned successfully!\n";
     }
-
-    printUsers();
-
-    int userIndex;
-    cout << "Choose user index: ";
-    cin >> userIndex;
-
-    if (userIndex < 0 || userIndex >= users.size()) {
-        cout << "Invalid user index!\n";
-        return;
-    }
-
-    User& chosenUser = users[userIndex];
-
-    printProjects();
-
-    int projectIndex;
-    cout << "Choose project index: ";
-    cin >> projectIndex;
-
-    if (projectIndex < 0 || projectIndex >= projects.size()) {
-        cout << "Invalid project index!\n";
-        return;
-    }
-
-    Project& chosenProject = projects[projectIndex];
-    vector<Task>& tasks = chosenProject.getTasks();
-
-    if (tasks.empty()) {
-        cout << "No tasks in this project!\n";
-        return;
-    }
-
-    printTasks(tasks);
-
-    int taskIndex;
-    cout << "Choose task index: ";
-    cin >> taskIndex;
-
-    if (taskIndex < 0 || taskIndex >= tasks.size()) {
-        cout << "Invalid task index!\n";
-        return;
-    }
-
-    Task& chosenTask = tasks[taskIndex];
-    chosenTask.assignUser(&chosenUser);
-    chosenUser.addTask(&chosenTask);
-
-    cout << "Task assigned successfully!\n";
-}
 
 void updateUser() {
     if (users.empty()) {
