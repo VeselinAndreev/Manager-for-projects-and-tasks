@@ -64,8 +64,6 @@ public:
 
     virtual ~AbstractItem() {}
 
-    virtual void getInfo() const = 0;
-
     string getTitle() const {
         return title;
     }
@@ -96,11 +94,11 @@ public:
 };
 
 class Date {
-public:
+protected:
     int day;
     int month;
     int year;
-
+public:
     bool isLeapYear(int year) const {
         return (year % 400 == 0) || (year % 4 == 0 && year % 100 != 0);
     }
@@ -131,8 +129,9 @@ public:
         }
     }
 
-    void getInfo() const {
-        cout << day << "/" << month << "/" << year;
+    friend ostream& operator<<(ostream& out, const Date& date) {
+        out << date.day << "/" << date.month << "/" << date.year;
+        return out;
     }
 };
 
@@ -206,8 +205,9 @@ public:
         return assignedTasks;
     }
 
-    void getInfo() {
-        cout << "id = " << id << "," << name << " - " << email << endl;
+    friend ostream& operator<<(ostream& out, const User& user) {
+        out << "id = " << user.id << ", " << user.name << " - " << user.email;
+        return out;
     }
 };
 
@@ -271,10 +271,11 @@ public:
         return false;
     }
 
-    void getInfo() const override {
-        cout << "id = " << id << ", " << title << " - " << description << ", ";
-        deadline.getInfo();
-        cout << ", " << priorityToString(priority) << ", " << statusToString(status) << endl;
+    friend ostream& operator<<(ostream& out, const Task& task) {
+        out << "id = " << task.id << ", " << task.title << " - " << task.description << ", ";
+        out << task.deadline;
+        out << ", " << priorityToString(task.priority) << ", " << statusToString(task.status);
+        return out;
     }
 };
 
@@ -312,8 +313,10 @@ public:
         return false;
     }
 
-    void getInfo() const override {
-        cout << "id = " << id << ", " << title << " - " << description << endl;
+
+    friend ostream& operator<<(ostream& out, const Project& project) {
+        out << "id = " << project.id << ", " << project.title << " - " << project.description;
+        return out;
     }
 };
 

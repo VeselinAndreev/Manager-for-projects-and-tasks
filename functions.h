@@ -187,8 +187,8 @@ void showUsers() {
     }
 
     for(int i = 0; i < users.size(); i++) {
-        cout << "\nUser" << i << ": ";
-        users[i].getInfo();
+        cout << "\nUser " << i << ": ";
+        cout << users[i] << endl;
 
         const vector<Task*>& tasks = users[i].getTasks();
 
@@ -197,8 +197,8 @@ void showUsers() {
         }
         else {
             for (int j = 0; j < tasks.size(); j++) {
-                cout << "  Task " << j << ": ";
-                tasks[j]->getInfo();
+                cout << "  Task " << j << ": ";     
+                cout << *tasks[j] << endl;
             }
         }
     }
@@ -212,7 +212,7 @@ void showProjects() {
 
     for (int i = 0; i < projects.size(); i++) {
         cout << "\nProject " << i << ": ";
-        projects[i].getInfo();
+        cout << projects[i] << endl;
 
         vector<Task>& tasks = projects[i].getTasks();
 
@@ -222,7 +222,7 @@ void showProjects() {
         else {
             for (int j = 0; j < tasks.size(); j++) {
                 cout << "  Task " << j << ": ";
-                tasks[j].getInfo();
+                cout << tasks[j] << endl;
             }
         }
     }
@@ -581,7 +581,7 @@ void sortTasksByPriority() {
 
     for (int i = 0; i < tasks.size(); i++) {
         cout << "Task " << i << ": ";
-        tasks[i].getInfo();
+        cout << tasks[i] << endl;
     }
 }
 
@@ -630,7 +630,7 @@ void sortTasksByStatus() {
 
     for (int i = 0; i < tasks.size(); i++) {
         cout << "Task " << i << ": ";
-        tasks[i].getInfo();
+        cout << tasks[i] << endl;
     }
 }
 
