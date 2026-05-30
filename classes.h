@@ -133,6 +133,12 @@ public:
         out << date.day << "/" << date.month << "/" << date.year;
         return out;
     }
+
+    bool operator<(const Date& other) const {
+        if (year != other.year) return year < other.year;
+        if (month != other.month) return month < other.month;
+        return day < other.day;
+    }
 };
 
 class Task;
@@ -282,7 +288,13 @@ public:
     }
 
     bool isOverdue() {
-        return false;
+        time_t now = time(nullptr);
+        //number of seconds since january 1 1970
+        tm* today = localtime(&now);
+        //converts into human-readable
+        Date currentDate(today->tm_mday, today->tm_mon + 1, today->tm_year + 1900);
+        //months start from 0, years start from 1900
+        return deadline < currentDate;
     }
 
     friend ostream& operator<<(ostream& out, const Task& task) {
