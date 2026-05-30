@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <ctime>
 
 using namespace std;
 
@@ -38,6 +39,52 @@ inline string statusToString(Status s) {
         case CANCELED: return "CANCELED";
     }
     return "";
+}
+
+inline tm createDeadline(int day, int month, int year) {
+    if (year < 0) {
+        throw invalid_argument("Invalid year");
+    }
+
+    if (month < 1 || month > 12) {
+        throw invalid_argument("Invalid month");
+    }
+
+    int daysInMonth[] = {
+        31, 28, 31, 30,
+        31, 30, 31, 31,
+        30, 31, 30, 31
+    };
+
+    if ((year % 400 == 0) || (year % 4 == 0 && year % 100 != 0)) {
+        daysInMonth[1] = 29;
+    }
+
+    if (day < 1 || day > daysInMonth[month - 1]) {
+        throw invalid_argument("Invalid date");
+    }
+
+    tm deadline = {};
+    deadline.tm_mday = day;
+    deadline.tm_mon = month - 1;
+    deadline.tm_year = year - 1900;
+
+    return deadline;
+}
+
+inline ostream& operator<<(ostream& out, const tm& date) {
+    out << date.tm_mday << "/" << (date.tm_mon + 1) << "/" << (date.tm_year + 1900);
+    return out;
+}
+
+inline bool operator<(const tm& a, const tm& b) {
+    if (a.tm_year != b.tm_year)
+        return a.tm_year < b.tm_year;
+
+    if (a.tm_mon != b.tm_mon)
+        return a.tm_mon < b.tm_mon;
+
+    return a.tm_mday < b.tm_mday;
 }
 
 class AbstractItem {
@@ -90,54 +137,6 @@ public:
         }
 
         description = newDescription;
-    }
-};
-
-class Date {
-protected:
-    int day;
-    int month;
-    int year;
-public:
-    bool isLeapYear(int year) const {
-        return (year % 400 == 0) || (year % 4 == 0 && year % 100 != 0);
-    }
-
-    Date(int day, int month, int year)
-        : day(day), month(month), year(year) {
-            
-        if (year < 0) {
-            throw invalid_argument("Invalid year");
-        }
-
-        if (month < 1 || month > 12) {
-            throw invalid_argument("Invalid month");
-        }
-
-        int daysInMonth[] = {
-            31, 28, 31, 30,
-            31, 30, 31, 31,
-            30, 31, 30, 31
-        };
-
-        if (isLeapYear(year)) {
-            daysInMonth[1] = 29;
-        }
-
-        if (day < 1 || day > daysInMonth[month - 1]) {
-            throw invalid_argument("Invalid date");
-        }
-    }
-
-    friend ostream& operator<<(ostream& out, const Date& date) {
-        out << date.day << "/" << date.month << "/" << date.year;
-        return out;
-    }
-
-    bool operator<(const Date& other) const {
-        if (year != other.year) return year < other.year;
-        if (month != other.month) return month < other.month;
-        return day < other.day;
     }
 };
 
@@ -226,14 +225,14 @@ public:
 
 class Task : public AbstractItem {
 private:
-    Date deadline;
+    tm deadline;
     Priority priority;
     Status status;
     vector<User*> assignedUsers;
 
 public:
-    Task(int id, const string& title, const string& description, const Date& deadline, Priority priority, Status status)
-        : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status) {
+    Task(int id, const string& title, const string& description, const tm& deadline, Priority priority, Status status)
+    : AbstractItem(id, title, description), deadline(deadline), priority(priority), status(status) {
         if (priority < LOW || priority > HIGH) {
             throw invalid_argument("Invalid priority");
         }
@@ -251,7 +250,7 @@ public:
         this->priority = priority;
     }
 
-    void updateDeadline(const Date& newDeadline) {
+    void updateDeadline(const tm& newDeadline) {
         deadline = newDeadline;
     }
 
@@ -263,7 +262,7 @@ public:
         return status;
     }
 
-    const Date& getDeadline() const {
+    const tm& getDeadline() const {
         return deadline;
     }
 
@@ -289,11 +288,16 @@ public:
 
     bool isOverdue() {
         time_t now = time(nullptr);
-        //number of seconds since january 1 1970
+        //time from january 1 1970 is seconds
         tm* today = localtime(&now);
-        //converts into human-readable
-        Date currentDate(today->tm_mday, today->tm_mon + 1, today->tm_year + 1900);
-        //months start from 0, years start from 1900
+        //localtime turns time_t seconds into tm object and returns adress to it
+
+        tm currentDate = {};
+        currentDate.tm_mday = today->tm_mday;
+        currentDate.tm_mon = today->tm_mon;
+        //from 0
+        currentDate.tm_year = today->tm_year;
+        //from 1900
         return deadline < currentDate;
     }
 

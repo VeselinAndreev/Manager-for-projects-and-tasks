@@ -171,7 +171,7 @@ void addTaskToProject() {
     cin >> priorityChoice;
 
     try {
-        Task task(id, title, description, Date(day, month, year), (Priority)priorityChoice, NEW);
+        Task task(id, title, description, createDeadline(day, month, year), (Priority)priorityChoice, NEW);
         projects[projectIndex].addTask(task);
         cout << "Task added successfully!\n";
     }
@@ -475,7 +475,7 @@ void updateTask() {
     try {
         tasks[taskIndex].updateTitle(title);
         tasks[taskIndex].updateDescription(description);
-        tasks[taskIndex].updateDeadline(Date(day, month, year));
+        tasks[taskIndex].updateDeadline(createDeadline(day, month, year));
         tasks[taskIndex].changePriority((Priority)priorityChoice);
         tasks[taskIndex].changeStatus((Status)statusChoice);
         cout << "Task updated successfully!\n";
