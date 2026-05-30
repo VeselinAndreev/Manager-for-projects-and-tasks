@@ -58,10 +58,11 @@ int main() {
                 sortTasksByStatus();
                 break;
             case 15:
+                showDeadlineWarnings();
+                break;
+            case 16:
                 cout << "Exiting...\n";
                 return 0;
-            default:
-                cout << "Invalid choice!\n";
         }
     }
 

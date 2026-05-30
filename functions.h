@@ -7,6 +7,18 @@
 extern vector<User> users;
 extern vector<Project> projects;
 
+bool readInt(int& value) {
+    cin >> value;
+
+    if (cin.fail()) {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        return false;
+    }
+
+    return true;
+}
+
 bool userIdExists(int id) {
     for (const auto& user : users) {
         if (user.getId() == id) {
@@ -41,7 +53,8 @@ void printMenu() {
     cout << "12. Delete Task\n";
     cout << "13. Sort tasks by priority\n";
     cout << "14. Sort tasks by status\n";
-    cout << "15. Exit\n";
+    cout << "15. Show deadline warnings\n";
+    cout << "16. Exit\n";
     cout << "Choice: ";
 }
 
@@ -78,7 +91,10 @@ void addUser() {
     string name, email;
 
     cout << "User ID: ";
-    cin >> id;
+    if (!readInt(id)) {
+        cout << "Invalid id! It must be a number.\n";
+        return;
+    }
     cin.ignore();
 
     if (userIdExists(id)) {
@@ -106,7 +122,10 @@ void createProject() {
     string title, description;
 
     cout << "Project ID: ";
-    cin >> id;
+    if (!readInt(id)) {
+        cout << "Invalid id! It must be a number.\n";
+        return;
+    }
     cin.ignore();
 
     if (projectIdExists(id)) {
@@ -150,7 +169,11 @@ void addTaskToProject() {
     string title, description;
 
     cout << "Task ID: ";
-    cin >> id;
+    if (!readInt(id)) {
+        cout << "Invalid id! It must be a number.\n";
+        return;
+    }
+
     cin.ignore();
 
     if (projects[projectIndex].taskIdExists(id)) {
@@ -165,7 +188,10 @@ void addTaskToProject() {
     getline(cin, description);
 
     cout << "Deadline day month year: ";
-    cin >> day >> month >> year;
+    if (!readInt(day) || !readInt(month) || !readInt(year)) {
+        cout << "Invalid deadline! Day, month and year must be numbers.\n";
+        return;
+    }
 
     cout << "Priority (0-LOW, 1-MEDIUM, 2-HIGH): ";
     cin >> priorityChoice;
@@ -464,7 +490,10 @@ void updateTask() {
     getline(cin, description);
 
     cout << "New deadline day month year: ";
-    cin >> day >> month >> year;
+    if (!readInt(day) || !readInt(month) || !readInt(year)) {
+        cout << "Invalid deadline! Day, month and year must be numbers.\n";
+        return;
+    }
 
     cout << "New priority (0-LOW, 1-MEDIUM, 2-HIGH): ";
     cin >> priorityChoice;
@@ -639,6 +668,54 @@ void sortTasksByStatus() {
     for (int i = 0; i < tasks.size(); i++) {
         cout << "Task " << i << ": ";
         cout << tasks[i] << endl;
+    }
+}
+
+void showDeadlineWarnings() {
+    if (projects.empty()) {
+        cout << "No projects available!\n";
+        return;
+    }
+
+    bool foundTask = false;
+
+    for (int i = 0; i < projects.size(); i++) {
+        vector<Task>& tasks = projects[i].getTasks();
+        bool printedProject = false;
+
+        for (int j = 0; j < tasks.size(); j++) {
+
+            if (tasks[j].getStatus() != NEW && tasks[j].getStatus() != IN_PROGRESS) {
+                continue;
+            }
+
+            int daysLeft = tasks[j].daysUntilDeadline();
+
+            if (daysLeft <= 3) {
+                if (!printedProject) {
+                    cout << "\nProject " << i << ": ";
+                    cout << projects[i] << endl;
+                    printedProject = true;
+                }
+
+                cout << "  Task " << j << ": ";
+                cout << tasks[j] << endl;
+
+                if (daysLeft < 0) {
+                    cout << "  Warning: Task " << tasks[j].getTitle() << " is overdue.\n";
+                }
+                else {
+                    cout << "  Warning: Task " << tasks[j].getTitle()
+                         << " has " << daysLeft << " days to be completed.\n";
+                }
+
+                foundTask = true;
+            }
+        }
+    }
+
+    if (!foundTask) {
+        cout << "No tasks with close deadlines.\n";
     }
 }
 

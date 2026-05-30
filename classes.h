@@ -87,6 +87,24 @@ inline bool operator<(const tm& a, const tm& b) {
     return a.tm_mday < b.tm_mday;
 }
 
+inline int daysBetweenDates(const tm& from, const tm& to) {
+    tm fromCopy = from;
+    tm toCopy = to;
+    //copies, because there is more data in tm and tm& from and tm& to can change
+    fromCopy.tm_hour = 0;
+    fromCopy.tm_min = 0;
+    fromCopy.tm_sec = 0;
+
+    toCopy.tm_hour = 0;
+    toCopy.tm_min = 0;
+    toCopy.tm_sec = 0;
+
+    time_t fromTime = mktime(&fromCopy);
+    time_t toTime = mktime(&toCopy);
+
+    return (toTime - fromTime) / (60 * 60 * 24);
+}
+
 class AbstractItem {
 protected:
     int id;
@@ -299,6 +317,18 @@ public:
         currentDate.tm_year = today->tm_year;
         //from 1900
         return deadline < currentDate;
+    }
+
+    int daysUntilDeadline() const {
+        time_t now = time(nullptr);
+        tm* today = localtime(&now);
+
+        tm currentDate = {};
+        currentDate.tm_mday = today->tm_mday;
+        currentDate.tm_mon = today->tm_mon;
+        currentDate.tm_year = today->tm_year;
+
+        return daysBetweenDates(currentDate, deadline);
     }
 
     friend ostream& operator<<(ostream& out, const Task& task) {
